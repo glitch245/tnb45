@@ -3,176 +3,160 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fred AI</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXUS AI</title>
 <style>
-* {
-  box-sizing: border-box;
+*{box-sizing:border-box}
+body{
+margin:0;background:#050b16;color:#eafaff;
+font-family:Arial,sans-serif;
+min-height:100vh;
 }
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #050b18;
-  color: #00eaff;
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 20px;
+.app{
+max-width:550px;margin:auto;padding:22px;
+min-height:100vh;display:flex;flex-direction:column;
 }
-
-h1 {
-  font-size: 36px;
-  text-shadow: 0 0 15px #00eaff;
+header{text-align:center;padding:25px 0}
+.logo{
+width:95px;height:95px;margin:auto;
+border:2px solid #00dfff;border-radius:50%;
+display:grid;place-items:center;
+font-size:42px;color:#00eaff;
+box-shadow:0 0 30px #00dfff66;
 }
-
-.orb {
-  width: 150px;
-  height: 150px;
-  margin: 35px auto;
-  border: 3px solid #00eaff;
-  border-radius: 50%;
-  box-shadow: 0 0 30px #00eaff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30px;
-  animation: pulse 2s infinite;
+h1{color:#00eaff;letter-spacing:9px;margin:15px 0 5px}
+.sub{color:#718da5;font-size:11px;letter-spacing:3px}
+.status{color:#00e69a;font-size:12px;margin-top:17px}
+.chat{
+flex:1;min-height:300px;max-height:55vh;
+overflow-y:auto;background:#0a1727;
+border:1px solid #173b54;
+border-radius:15px;padding:14px;
 }
-
-@keyframes pulse {
-  50% {
-    box-shadow: 0 0 55px #008cff;
-  }
+.msg{
+padding:12px;margin:10px 0;
+border-radius:12px;line-height:1.5;
+white-space:pre-wrap;
 }
-
-button {
-  background: #00eaff;
-  color: #050b18;
-  border: none;
-  padding: 13px 20px;
-  margin: 8px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
+.bot{background:#102b40}
+.user{background:#07435b;text-align:right}
+.controls{display:flex;gap:8px;margin-top:15px}
+input{
+flex:1;min-width:0;padding:15px;
+background:#101e30;color:white;
+border:1px solid #17617c;border-radius:10px;
+font-size:15px;
 }
-
-input {
-  width: 90%;
-  max-width: 450px;
-  padding: 14px;
-  border-radius: 8px;
-  border: 1px solid #00eaff;
-  background: #101b30;
-  color: white;
-  margin-top: 20px;
+button{
+border:0;border-radius:10px;
+padding:12px;background:#00c9ef;
+color:#00121b;font-weight:bold;
 }
-
-#response {
-  margin: 25px auto;
-  max-width: 500px;
-  padding: 15px;
-  line-height: 1.6;
-  color: white;
-  background: #101b30;
-  border-radius: 10px;
-  min-height: 70px;
+.voice{
+margin-top:10px;width:100%;
+background:#102b40;color:#00eaff;
 }
+footer{text-align:center;color:#526b80;font-size:11px;margin-top:22px}
 </style>
 </head>
-
 <body>
+<div class="app">
+<header>
+<div class="logo">N</div>
+<h1>NEXUS</h1>
+<div class="sub">FUTURISTIC AI ASSISTANT</div>
+<div class="status">● SYSTEM ONLINE</div>
+</header>
 
-<h1>FRED AI</h1>
-<p>Your Intelligent Virtual Assistant</p>
+<div class="chat" id="chat">
+<div class="msg bot">
+Hello! I am NEXUS.
 
-<div class="orb">F</div>
+Your intelligent AI assistant is ready. How can I help you?
+</div>
+</div>
 
-<input id="question" placeholder="Ask Fred anything...">
+<div class="controls">
+<input id="input" placeholder="Talk to NEXUS...">
+<button onclick="sendMessage()">SEND</button>
+</div>
 
-<br>
+<button class="voice" onclick="speakLast()">🔊 REPEAT LAST RESPONSE</button>
 
-<button onclick="askFred()">ASK FRED</button>
-<button onclick="startVoice()">🎤 SPEAK</button>
-
-<div id="response">
-Fred AI is online. How can I help you?
+<footer>NEXUS AI · INTELLIGENCE REDEFINED</footer>
 </div>
 
 <script>
-const API_ENDPOINT = "/.netlify/functions/chat";
+let history=[];
+let lastResponse="Hello! I am NEXUS. How can I help you?";
 
-async function askFred() {
-  const question = document.getElementById("question").value.trim();
-  const response = document.getElementById("response");
-
-  if (!question) {
-    response.textContent = "Please enter a question.";
-    return;
-  }
-
-  response.textContent = "Fred is thinking...";
-
-  try {
-    const result = await fetch(API_ENDPOINT, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({message: question})
-    });
-
-    const data = await result.json();
-
-    if (!result.ok) throw new Error(data.error || "Request failed");
-
-    response.textContent = data.reply || "No response received.";
-
-    speak(data.reply || "");
-  } catch (error) {
-    response.textContent =
-      "AI connection error. Please check the Netlify configuration.";
-  }
+function addMessage(text,type){
+const chat=document.getElementById("chat");
+const div=document.createElement("div");
+div.className="msg "+type;
+div.textContent=text;
+chat.appendChild(div);
+chat.scrollTop=chat.scrollHeight;
 }
 
-function speak(text) {
-  if (!("speechSynthesis" in window)) return;
+async function sendMessage(){
+const input=document.getElementById("input");
+const message=input.value.trim();
+if(!message)return;
 
-  speechSynthesis.cancel();
+input.value="";
+addMessage(message,"user");
 
-  const speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-US";
-  speech.rate = 1;
+history.push({role:"user",parts:[{text:message}]});
 
-  speechSynthesis.speak(speech);
+const loading=document.createElement("div");
+loading.className="msg bot";
+loading.textContent="NEXUS is thinking...";
+document.getElementById("chat").appendChild(loading);
+
+try{
+const response=await fetch("/.netlify/functions/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({history})
+});
+
+const data=await response.json();
+loading.remove();
+
+if(!response.ok)throw new Error(data.error||"AI connection failed");
+
+lastResponse=data.reply;
+history.push({role:"model",parts:[{text:data.reply}]});
+addMessage(data.reply,"bot");
+
+if("speechSynthesis" in window){
+speechSynthesis.cancel();
+const speech=new SpeechSynthesisUtterance(data.reply);
+speech.lang="en-US";
+speechSynthesis.speak(speech);
+}
+}catch(error){
+loading.remove();
+history.pop();
+addMessage("Connection error: "+error.message,"bot");
+}
 }
 
-function startVoice() {
-  const Recognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if (!Recognition) {
-    document.getElementById("response").textContent =
-      "Voice recognition is not supported by this browser.";
-    return;
-  }
-
-  const recognition = new Recognition();
-  recognition.lang = "en-US";
-
-  recognition.onresult = function(event) {
-    document.getElementById("question").value =
-      event.results[0][0].transcript;
-
-    askFred();
-  };
-
-  recognition.onerror = function() {
-    document.getElementById("response").textContent =
-      "Microphone error. Check browser permissions.";
-  };
-
-  recognition.start();
+function speakLast(){
+if(!("speechSynthesis" in window)){
+alert("Voice is not supported.");
+return;
 }
+speechSynthesis.cancel();
+const speech=new SpeechSynthesisUtterance(lastResponse);
+speech.lang="en-US";
+speechSynthesis.speak(speech);
+}
+
+document.getElementById("input").addEventListener("keydown",e=>{
+if(e.key==="Enter")sendMessage();
+});
 </script>
-
 </body>
 </html>
